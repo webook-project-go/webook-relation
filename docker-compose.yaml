@@ -1,0 +1,32 @@
+services:
+  mysql8:
+    image: mysql:8.0.29
+    restart: always
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - ./script/mysql/:/docker-entrypoint-initdb.d/
+    ports:
+      - "13316:3306"
+
+  redis:
+    image: 'bitnami/redis:latest'
+    environment:
+      ALLOW_EMPTY_PASSWORD: yes
+    ports:
+      - '13322:6379'
+
+  etcd:
+    image: 'bitnami/etcd:latest'
+    environment:
+      - ALLOW_NONE_AUTHENTICATION=yes
+    ports:
+      - '13317:2379'
+
+  prometheus:
+    image: prom/prometheus:v2.47.2
+    ports:
+      - '9090:9090'
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yml
