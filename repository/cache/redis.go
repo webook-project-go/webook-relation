@@ -21,6 +21,7 @@ type Cache interface {
 	UpdateRelation(ctx context.Context, info domain.RelationInfo, delta int) error
 	GetFolloweeCount(ctx context.Context, uid int64) (uint32, error)
 	SetFolloweesCount(ctx context.Context, uid int64, cnt uint32) error
+	CacheLimit() int
 }
 type redisCache struct {
 	rdb      redis.Cmdable
@@ -42,7 +43,9 @@ func New(rdb redis.Cmdable) Cache {
 func followersKey(uid int64) string   { return fmt.Sprintf("followers:%d", uid) }
 func followeesKey(uid int64) string   { return fmt.Sprintf("followees:%d", uid) }
 func followCountKey(uid int64) string { return fmt.Sprintf("follow_count:%d", uid) }
-
+func (c *redisCache) CacheLimit() int {
+	return 1000
+}
 func (c *redisCache) FindFollowers(ctx context.Context, uid int64) ([]int64, error) {
 	val, err := c.rdb.Get(ctx, followersKey(uid)).Result()
 	if errors.Is(err, redis.Nil) {

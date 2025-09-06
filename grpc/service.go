@@ -44,7 +44,7 @@ func (s *Service) UnFollow(ctx context.Context, info *v1.RelationInfo) (*emptypb
 }
 
 func (s *Service) GetFollowers(ctx context.Context, req *v1.GetFollowersReq) (*v1.UserIDList, error) {
-	res, err := s.svc.GetFollowers(ctx, req.GetUid())
+	res, err := s.svc.GetFollowers(ctx, req.GetUid(), req.GetLastID(), int(req.GetLimit()))
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func (s *Service) GetFollowers(ctx context.Context, req *v1.GetFollowersReq) (*v
 }
 
 func (s *Service) GetFollowees(ctx context.Context, req *v1.GetFolloweesReq) (*v1.UserIDList, error) {
-	res, err := s.svc.GetFollowees(ctx, req.GetUid())
+	res, err := s.svc.GetFollowees(ctx, req.GetUid(), req.GetLastID(), int(req.GetLimit()))
 	if err != nil {
 		return nil, err
 	}

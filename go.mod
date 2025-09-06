@@ -8,7 +8,7 @@ require (
 	github.com/redis/go-redis/v9 v9.12.1
 	github.com/spf13/pflag v1.0.6
 	github.com/spf13/viper v1.20.1
-	github.com/webook-project-go/webook-apis v0.1.4
+	github.com/webook-project-go/webook-apis v0.1.7-0.20250906084444-d782fbfdf080
 	github.com/webook-project-go/webook-pkgs v0.1.3
 	go.etcd.io/etcd/client/v3 v3.6.4
 	go.opentelemetry.io/otel v1.38.0

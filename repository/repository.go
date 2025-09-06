@@ -10,8 +10,8 @@ import (
 type Repository interface {
 	MarkFollow(ctx context.Context, info domain.RelationInfo) error
 	MarkUnFollow(ctx context.Context, info domain.RelationInfo) error
-	FindFollowers(ctx context.Context, uid int64) ([]int64, error)
-	FindFollowees(ctx context.Context, uid int64) ([]int64, error)
+	FindFollowers(ctx context.Context, uid, lastID int64, limit int) ([]int64, error)
+	FindFollowees(ctx context.Context, uid, lastID int64, limit int) ([]int64, error)
 	GetFollowerCount(ctx context.Context, uid int64) (uint32, error)
 	GetFolloweeCount(ctx context.Context, uid int64) (uint32, error)
 }
@@ -62,29 +62,39 @@ func (r *repository) MarkUnFollow(ctx context.Context, info domain.RelationInfo)
 	return nil
 }
 
-func (r *repository) FindFollowers(ctx context.Context, uid int64) ([]int64, error) {
-	res, err := r.cache.FindFollowers(ctx, uid)
-	if err == nil && len(res) > 0 {
-		return res, nil
+func (r *repository) FindFollowers(ctx context.Context, uid, lastID int64, limit int) ([]int64, error) {
+	if lastID == 0 && r.cache.CacheLimit() >= limit {
+
+		res, err := r.cache.FindFollowers(ctx, uid)
+
+		if err == nil && len(res) > 0 {
+			return res, nil
+		}
 	}
-	res, err = r.d.FindFollowers(ctx, uid)
+	res, err := r.d.FindFollowers(ctx, uid, lastID, limit)
 	if err != nil {
 		return nil, err
 	}
-	_ = r.cache.SetFollowers(ctx, uid, res)
+	if lastID == 0 && r.cache.CacheLimit() >= limit {
+		_ = r.cache.SetFollowers(ctx, uid, res)
+	}
 	return res, nil
 }
 
-func (r *repository) FindFollowees(ctx context.Context, uid int64) ([]int64, error) {
-	res, err := r.cache.FindFollowees(ctx, uid)
-	if err == nil && len(res) > 0 {
-		return res, nil
+func (r *repository) FindFollowees(ctx context.Context, uid, lastID int64, limit int) ([]int64, error) {
+	if lastID == 0 && limit <= r.cache.CacheLimit() {
+		res, err := r.cache.FindFollowees(ctx, uid)
+		if err == nil && len(res) > 0 {
+			return res, nil
+		}
 	}
-	res, err = r.d.FindFollowees(ctx, uid)
+	res, err := r.d.FindFollowees(ctx, uid, lastID, limit)
 	if err != nil {
 		return nil, err
 	}
-	_ = r.cache.SetFollowees(ctx, uid, res)
+	if lastID == 0 && limit <= r.cache.CacheLimit() {
+		_ = r.cache.SetFollowees(ctx, uid, res)
+	}
 	return res, nil
 }
 

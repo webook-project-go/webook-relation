@@ -11,8 +11,8 @@ type Service interface {
 	Follow(ctx context.Context, info domain.RelationInfo) error
 	UnFollow(ctx context.Context, info domain.RelationInfo) error
 
-	GetFollowers(ctx context.Context, uid int64) ([]int64, error)
-	GetFollowees(ctx context.Context, uid int64) ([]int64, error)
+	GetFollowers(ctx context.Context, uid, lastID int64, limit int) ([]int64, error)
+	GetFollowees(ctx context.Context, uid int64, lastID int64, limit int) ([]int64, error)
 
 	GetFollowerCount(ctx context.Context, uid int64) (uint32, error)
 	GetFolloweeCount(ctx context.Context, uid int64) (uint32, error)
@@ -34,18 +34,18 @@ func (s *service) UnFollow(ctx context.Context, info domain.RelationInfo) error 
 	return s.repo.MarkUnFollow(ctx, info)
 }
 
-func (s *service) GetFollowers(ctx context.Context, uid int64) ([]int64, error) {
+func (s *service) GetFollowers(ctx context.Context, uid, lastID int64, limit int) ([]int64, error) {
 	if uid <= 0 {
 		return nil, errors.New("illegal uid")
 	}
-	return s.repo.FindFollowers(ctx, uid)
+	return s.repo.FindFollowers(ctx, uid, lastID, limit)
 }
 
-func (s *service) GetFollowees(ctx context.Context, uid int64) ([]int64, error) {
+func (s *service) GetFollowees(ctx context.Context, uid int64, lastID int64, limit int) ([]int64, error) {
 	if uid <= 0 {
 		return nil, errors.New("illegal uid")
 	}
-	return s.repo.FindFollowees(ctx, uid)
+	return s.repo.FindFollowees(ctx, uid, lastID, limit)
 }
 
 func (s *service) GetFollowerCount(ctx context.Context, uid int64) (uint32, error) {

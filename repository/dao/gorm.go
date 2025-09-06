@@ -11,8 +11,8 @@ import (
 type Dao interface {
 	UpsertFollowInfo(ctx context.Context, entity RelationInfo) error
 	MarkUnFollow(ctx context.Context, entity RelationInfo) error
-	FindFollowers(ctx context.Context, uid int64) ([]int64, error)
-	FindFollowees(ctx context.Context, uid int64) ([]int64, error)
+	FindFollowers(ctx context.Context, uid, lastID int64, limit int) ([]int64, error)
+	FindFollowees(ctx context.Context, uid, lastID int64, limit int) ([]int64, error)
 	GetFollowerCount(ctx context.Context, uid int64) (uint32, error)
 	GetFolloweeCount(ctx context.Context, uid int64) (uint32, error)
 }
@@ -49,11 +49,11 @@ func (d *dao) MarkUnFollow(ctx context.Context, entity RelationInfo) error {
 	return nil
 }
 
-func (d *dao) FindFollowers(ctx context.Context, uid int64) ([]int64, error) {
+func (d *dao) FindFollowers(ctx context.Context, uid, lastID int64, limit int) ([]int64, error) {
 	var res []RelationInfo
 	err := d.db.WithContext(ctx).
-		Where("followee = ? AND status = ?", uid, domain.StatusFollowing).
-		Find(&res).Error
+		Where("id > ? AND followee = ? AND status = ?", lastID, uid, domain.StatusFollowing).
+		Limit(limit).Find(&res).Error
 	if err != nil {
 		return nil, err
 	}
@@ -65,11 +65,11 @@ func (d *dao) FindFollowers(ctx context.Context, uid int64) ([]int64, error) {
 	return ids, nil
 }
 
-func (d *dao) FindFollowees(ctx context.Context, uid int64) ([]int64, error) {
+func (d *dao) FindFollowees(ctx context.Context, uid, lastID int64, limit int) ([]int64, error) {
 	var res []RelationInfo
 	err := d.db.WithContext(ctx).
-		Where("follower = ? AND status = ?", uid, domain.StatusFollowing).
-		Find(&res).Error
+		Where("id > ? AND follower = ? AND status = ?", lastID, uid, domain.StatusFollowing).
+		Limit(limit).Find(&res).Error
 	if err != nil {
 		return nil, err
 	}
